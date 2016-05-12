@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title> Preguntas </title>
-   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
   <link rel='stylesheet' href='/stylesheets/style.css' />
   <link rel='stylesheet' 
         type='text/css'
@@ -23,6 +23,7 @@
   <nav>
     <a href="/">Inicio</a>
     <a href="/question">Preguntas</a>
+    <a href="/author">Autor</a>
   </nav>
 
   <section>
@@ -32,8 +33,7 @@
   </section>
 
   <footer>
-    <a href="http://es.wikipedia.org/wiki/Quiz">
-      ¿Qué es un Quiz?</a>
-  </footer>
+      <a href="https://github.com/carlosaramiro/Quiz">GitHub</a>
+    </footer>
 </body> 
 </html>

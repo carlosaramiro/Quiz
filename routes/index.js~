@@ -6,6 +6,11 @@ router.get('/', function(req, res, next) {
   res.render('index');
 });
 
+router.get('/author', function(req, res) {
+  res.render('author');
+});
+
+
 router.get('/question', quizController.question);
 router.get('/check', quizController.check);
 
