@@ -3,7 +3,7 @@ var Sequelize = require('sequelize');
 
 // Autoload el quiz asociado a :quizId
 exports.load = function(req, res, next, quizId) {
-	models.Quiz.findById(quizId)
+	models.Quiz.findById(quizId, {include: [models.Comment]})
   		.then(function(quiz) {
       		if (quiz) {
         		req.quiz = quiz;
@@ -18,13 +18,47 @@ exports.load = function(req, res, next, quizId) {
 
 // GET /quizzes
 exports.index = function(req, res, next) {
-	models.Quiz.findAll()
-		.then(function(quizzes) {
-			res.render('quizzes/index.ejs', { quizzes: quizzes});
-		})
-		.catch(function(error) {
-			next(error);
-		});
+	if ((req.params.format === "JSON" || req.params.format === "json")){
+		if ("search" in req.query){
+			models.Quiz.findAll({order: 'question ASC', 
+								where: {question: {$like: "%" + req.query.search + "%"}}})
+				.then(function(quizzes){
+					res.status(200).json( { quizzes: quizzes});
+				})
+				.catch(function(error) {
+				next(error);
+			});
+		}else{
+		models.Quiz.findAll()
+			.then(function(quizzes) {
+				res.status(200).json({ quizzes: quizzes});
+			})
+			.catch(function(error) {
+				next(error);
+			});
+		}
+	}else if(req.params.format === "HTML" || req.params.format === "html" || !req.params.format){
+		if ("search" in req.query){
+			models.Quiz.findAll({order: 'question ASC', 
+								where: {question: {$like: "%" + req.query.search + "%"}}})
+				.then(function(quizzes){
+					res.render('quizzes/index.ejs', { quizzes: quizzes});
+				})
+				.catch(function(error) {
+				next(error);
+			});
+		}else{
+		models.Quiz.findAll()
+			.then(function(quizzes) {
+				res.render('quizzes/index.ejs', { quizzes: quizzes});
+			})
+			.catch(function(error) {
+				next(error);
+			});
+		}
+	}else{
+		res.json("Formato no válido");
+	}
 };
 
 
@@ -33,8 +67,15 @@ exports.show = function(req, res, next) {
 
 	var answer = req.query.answer || '';
 
-	res.render('quizzes/show', {quiz: req.quiz,
+	if (req.params.format === "JSON" || req.params.format === "json"){
+		res.json({quiz: req.quiz,
 								answer: answer});
+	}else if(req.params.format === "HTML" || req.params.format === "html" || !req.params.format){
+		res.render('quizzes/show', {quiz: req.quiz,
+								answer: answer});
+	}else{
+		res.json("Formato no válido");
+	}
 };
 
 
@@ -59,13 +100,17 @@ exports.new = function(req, res, next) {
 
 // POST /quizzes/create
 exports.create = function(req, res, next) {
+
+  var authorId = req.session.user && req.session.user.id || 0;
+
   var quiz = models.Quiz.build({ question: req.body.quiz.question, 
-  	                             answer:   req.body.quiz.answer} );
+  	                             answer:   req.body.quiz.answer,
+                                 AuthorId: authorId } );
 
   // guarda en DB los campos pregunta y respuesta de quiz
-  quiz.save({fields: ["question", "answer"]})
+  quiz.save({fields: ["question", "answer", "AuthorId"]})
   	.then(function(quiz) {
-		req.flash('success', 'Quiz creado con éxito.');
+		  req.flash('success', 'Quiz creado con éxito.');
     	res.redirect('/quizzes');  // res.redirect: Redirección HTTP a lista de preguntas
     })
     .catch(Sequelize.ValidationError, function(error) {
@@ -78,12 +123,10 @@ exports.create = function(req, res, next) {
       res.render('quizzes/new', {quiz: quiz});
     })
     .catch(function(error) {
-		req.flash('error', 'Error al crear un Quiz: '+error.message);
-		next(error);
+		  req.flash('error', 'Error al crear un Quiz: '+error.message);
+		  next(error);
 	});  
 };
-
-
 // GET /quizzes/:id/edit
 exports.edit = function(req, res, next) {
   var quiz = req.quiz;  // req.quiz: autoload de instancia de quiz
