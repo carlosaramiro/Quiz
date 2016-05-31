@@ -20,10 +20,12 @@ exports.load = function(req, res, next, quizId) {
 exports.index = function(req, res, next) {
 	if ((req.params.format === "JSON" || req.params.format === "json")){
 		if ("search" in req.query){
+			var search = req.query.search;
+			search = search.replace(' ', '%');
 			models.Quiz.findAll({order: 'question ASC', 
-								where: {question: {$like: "%" + req.query.search + "%"}}})
+								where: {question: {$like: "%" + search + "%"}}})
 				.then(function(quizzes){
-					res.json('quizzes/index.ejs', { quizzes: quizzes});
+					res.status(200).json( { quizzes: quizzes});
 				})
 				.catch(function(error) {
 				next(error);
@@ -31,16 +33,18 @@ exports.index = function(req, res, next) {
 		}else{
 		models.Quiz.findAll()
 			.then(function(quizzes) {
-				res.json('quizzes/index.ejs', { quizzes: quizzes});
+				res.status(200).json({ quizzes: quizzes});
 			})
 			.catch(function(error) {
 				next(error);
 			});
 		}
-	}else{
+	}else if(req.params.format === "HTML" || req.params.format === "html" || !req.params.format){
 		if ("search" in req.query){
+			var search = req.query.search;
+			search = search.replace(' ', '%');
 			models.Quiz.findAll({order: 'question ASC', 
-								where: {question: {$like: "%" + req.query.search + "%"}}})
+								where: {question: {$like: "%" + search + "%"}}})
 				.then(function(quizzes){
 					res.render('quizzes/index.ejs', { quizzes: quizzes});
 				})
@@ -56,6 +60,8 @@ exports.index = function(req, res, next) {
 				next(error);
 			});
 		}
+	}else{
+		res.json("Formato no válido");
 	}
 };
 
@@ -66,11 +72,13 @@ exports.show = function(req, res, next) {
 	var answer = req.query.answer || '';
 
 	if (req.params.format === "JSON" || req.params.format === "json"){
-		res.json('quizzes/show', {quiz: req.quiz,
+		res.json({quiz: req.quiz,
 								answer: answer});
-	}else{
+	}else if(req.params.format === "HTML" || req.params.format === "html" || !req.params.format){
 		res.render('quizzes/show', {quiz: req.quiz,
 								answer: answer});
+	}else{
+		res.json("Formato no válido");
 	}
 };
 
