@@ -32,7 +32,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(partials());
 app.use(flash());
 
-
 // Helper dinamico:
 app.use(function(req, res, next) {
 
@@ -43,19 +42,6 @@ app.use(function(req, res, next) {
 });
 
 app.use('/', routes);
-
-
-app.use(function(req, res, next){
-  if(!req.session.user){
-    next();
-  }else if(new Date() -req.session.user.tiempo>1000){
-      delete req.session.user;
-      next();
-  }else if(new Date() -req.session.user.tiempo<1000){
-      user.tiempo = new Date();
-      next();
-  }
-});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
