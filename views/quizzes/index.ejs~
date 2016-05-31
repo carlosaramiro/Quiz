@@ -18,3 +18,9 @@
 </table>
 
 <a href="/quizzes/new"><button type="button">Crear pregunta</button></a>
+<pre> </pre>
+<p>Buscador de preguntas:</p>
+<form method="get" action="/quizzes" >
+	<input type="text" name="search" placeholder="Texto a buscar" />
+	<input type="submit" value="Buscar">
+</form>
